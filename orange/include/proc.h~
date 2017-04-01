@@ -1,0 +1,75 @@
+typedef struct s_stackframe{
+	u32 	gs;
+	u32 	fs;
+	u32 	es;
+	u32 	ds;
+	u32 	edi;
+	u32 	esi;
+	u32 	ebp;
+	u32 	kernel_esp ;
+	u32 	ebx;
+	u32 	edx;
+	u32 	ecx;
+	u32 	eax;
+	u32 	retaddr;
+	u32 	eip;
+	u32 	cs;
+	u32 	eflags;
+	u32 	esp;
+	u32 	ss;
+}STACK_FRAME;
+
+typedef struct proc{
+	STACK_FRAME regs;
+
+	u16 ldt_sel;    /*ldt对应的selector*/
+	DESCRIPTOR ldts[LDT_SIZE]; /*ldt描述符表*/
+	
+	int ticks;
+	int priority;
+
+	u32 pid;
+	char p_name[16];
+
+	int p_flags;
+
+	MESSAGE * p_msg;
+	int 	p_recvfrom;
+	int 	p_sendto;
+/*proc is waitting a interrupt.Once the int occure ,System 
+*will set has_int_msg as 1 */
+	int 	has_int_msg;
+/*A,B,C-->p:
+p->q_sending = A;A->nexting=B;;B->nexting=C;;C->nexting=0;
+*/
+	struct proc* q_sending;
+	struct proc* next_sending;
+
+	int nr_tty;
+}PROCESS;
+
+typedef struct s_task{
+	task_f 		initial_eip;
+	int 		stacksize;
+	char 		name[32];
+	int 		priority;
+}TASK;
+
+/* Number of tasks & procs */
+#define NR_TASKS	1
+#define NR_PROCS	4
+#define FIRST_PROC	proc_table[0]
+#define LAST_PROC	proc_table[NR_TASKS + NR_PROCS - 1]
+/* stacks of tasks */
+#define STACK_SIZE_TTY		0x8000
+#define STACK_SIZE_SYS	    0x8000
+#define STACK_SIZE_FS	    0x8000
+#define STACK_SIZE_HD	    0x8000
+#define STACK_SIZE_TESTA	0x8000
+#define STACK_SIZE_TESTB	0x8000
+#define STACK_SIZE_TESTC	0x8000
+#define STACK_SIZE_TESTD	0x8000
+void TestD();
+#define STACK_SIZE_TOTAL	(STACK_SIZE_TTY+STACK_SIZE_TESTA+STACK_SIZE_TESTB \
+							 +STACK_SIZE_TESTB+STACK_SIZE_SYS+STACK_SIZE_FS \
+							 +STACK_SIZE_HD+STACK_SIZE_TESTD)
